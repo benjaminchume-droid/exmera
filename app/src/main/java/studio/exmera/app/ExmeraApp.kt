@@ -54,10 +54,11 @@ fun ExmeraApp(profile: String) {
                     TextButton(onClick = { mode = "Enhance" }) { Text("✨ Enhance") }
                     Button(
                         onClick = {
-                            if (captureState == MultiFrameCaptureEngine.State.CAPTURING) return@Button
-                            if (captureState == MultiFrameCaptureEngine.State.COMPLETE) captureEngine.reset()
-                            captureEngine.start(5)
-                            mode = "Computational Capture"
+                            if (captureState != MultiFrameCaptureEngine.State.CAPTURING) {
+                                if (captureState == MultiFrameCaptureEngine.State.COMPLETE) captureEngine.reset()
+                                captureEngine.start(5)
+                                mode = "Computational Capture"
+                            }
                         },
                         shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.size(72.dp)
