@@ -32,11 +32,17 @@
 - [x] temporal denoise / outlier suppression
 - [x] first reconstructed output
 - [x] result comparison/result UI
+- [x] Phase 10 deterministic super-resolution backend
+- [x] 2× and 4× output pipeline
+- [x] EXM-ready super-resolution backend interface
+- [x] objective image-quality metric primitives
+- [ ] Camera2 RAW ImageReader integration
 - [ ] dense optical-flow alignment
+- [ ] gyro-assisted registration
 - [ ] HDR exposure bracketing
-- [ ] full-resolution tiled fusion
+- [ ] full-resolution tiled learned fusion
 - [ ] GPU/NPU accelerated kernels
-- [ ] learned super-resolution
+- [ ] trained learned super-resolution model
 
 ## Milestone 3 — Vision
 - [ ] face detection/tracking
