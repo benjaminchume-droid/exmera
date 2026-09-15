@@ -1,35 +1,37 @@
 package studio.exmera.app
 
-import android.content.Context
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.core.content.ContextCompat
+import androidx.lifecycle.LifecycleOwner
+import studio.exmera.app.camera.ExmeraCameraController
 
 @Composable
-fun CameraPreview(modifier: Modifier = Modifier) {
+fun CameraPreview(
+    modifier: Modifier = Modifier,
+    onController: (ExmeraCameraController) -> Unit = {}
+) {
     val context = LocalContext.current
-    AndroidView(modifier = modifier, factory = { ctx ->
-        PreviewView(ctx).also { view -> bindCamera(ctx, view) }
-    })
-}
+    val lifecycleOwner = context as? LifecycleOwner ?: return
+    val controller = remember(context, lifecycleOwner) {
+        ExmeraCameraController(context, lifecycleOwner)
+    }
 
-private fun bindCamera(context: Context, view: PreviewView) {
-    val future = ProcessCameraProvider.getInstance(context)
-    future.addListener({
-        val provider = future.get()
-        val preview = Preview.Builder().build().also { it.surfaceProvider = view.surfaceProvider }
-        provider.unbindAll()
-        provider.bindToLifecycle(
-            context as androidx.lifecycle.LifecycleOwner,
-            CameraSelector.DEFAULT_BACK_CAMERA,
-            preview
-        )
-    }, ContextCompat.getMainExecutor(context))
+    AndroidView(
+        modifier = modifier,
+        factory = { ctx ->
+            PreviewView(ctx).also { view ->
+                controller.bind(view)
+                onController(controller)
+            }
+        }
+    )
+
+    DisposableEffect(controller) {
+        onDispose { controller.shutdown() }
+    }
 }
