@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "packs": [
+    {"id":"core","name":"Exmera Core","target":"8-22MB","required":true},
+    {"id":"smart","name":"Exmera Smart","target":"28-60MB","required":false},
+    {"id":"creator","name":"Exmera Creator","target":"45-105MB","required":false},
+    {"id":"cinema","name":"Exmera Cinema","target":"80-220MB+","required":false}
+  ],
+  "models": [
+    {"id":"realesrgan-general-x4v3","pack":"core","sourceFormat":"onnx","status":"benchmark-first","license":"VERIFY_BEFORE_REDISTRIBUTION"},
+    {"id":"face-detection-lite","pack":"core","sourceFormat":"tflite","status":"planned","license":"VERIFY_BEFORE_REDISTRIBUTION"},
+    {"id":"object-detection-lite","pack":"core","sourceFormat":"onnx","status":"planned","license":"VERIFY_BEFORE_REDISTRIBUTION"}
+  ]
+}
