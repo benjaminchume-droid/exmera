@@ -36,11 +36,15 @@ fun ExmeraApp(profile: String) {
                 }
                 Spacer(Modifier.height(18.dp))
                 Box(Modifier.fillMaxWidth().weight(1f).background(Color(0xFF151515), RoundedCornerShape(28.dp)), contentAlignment = Alignment.Center) {
-                    if (fusedBitmap != null) Image(fusedBitmap!!.asImageBitmap(), "Computationally reconstructed result", Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
+                    if (fusedBitmap != null) Image(fusedBitmap!!.asImageBitmap(), "Pixel Creator reconstructed result", Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
                     else CameraPreview(Modifier.fillMaxSize(), captureEngine = captureEngine)
                     if (captureState == MultiFrameCaptureEngine.State.CAPTURING || captureState == MultiFrameCaptureEngine.State.PROCESSING) {
                         Surface(Modifier.align(Alignment.TopCenter).padding(top = 16.dp), shape = RoundedCornerShape(20.dp), tonalElevation = 4.dp) {
-                            Text(if (captureState == MultiFrameCaptureEngine.State.CAPTURING) "Capturing frames…" else "Aligning + fusing…", Modifier.padding(horizontal = 16.dp, vertical = 8.dp), fontSize = 12.sp)
+                            Text(
+                                if (captureState == MultiFrameCaptureEngine.State.CAPTURING) "Capturing frames…" else "Reconstructing pixels…",
+                                Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                fontSize = 12.sp
+                            )
                         }
                     }
                 }
@@ -49,7 +53,11 @@ fun ExmeraApp(profile: String) {
                     TextButton(onClick = { fusedBitmap = null; mode = "Camera" }) { Text("Camera") }
                     Button(enabled = captureState != MultiFrameCaptureEngine.State.PROCESSING, onClick = {
                         if (captureState == MultiFrameCaptureEngine.State.COMPLETE) {
-                            scope.launch { val result = withContext(Dispatchers.Default) { captureEngine.processToBitmap() }; fusedBitmap = result; mode = if (result != null) "Fused result" else "Camera" }
+                            scope.launch {
+                                val result = withContext(Dispatchers.Default) { captureEngine.processToBitmap() }
+                                fusedBitmap = result
+                                mode = if (result != null) "Pixel Creator result" else "Camera"
+                            }
                         } else if (captureState != MultiFrameCaptureEngine.State.CAPTURING && captureState != MultiFrameCaptureEngine.State.CLOSED) {
                             fusedBitmap = null; captureEngine.start(5); mode = "Computational Capture"
                         }
@@ -59,7 +67,7 @@ fun ExmeraApp(profile: String) {
                 Text(when (captureState) {
                     MultiFrameCaptureEngine.State.CAPTURING -> "Gathering original frames"
                     MultiFrameCaptureEngine.State.COMPLETE -> "5 frames captured • tap ✓ to reconstruct"
-                    MultiFrameCaptureEngine.State.PROCESSING -> "Motion alignment • exposure normalization • robust denoise"
+                    MultiFrameCaptureEngine.State.PROCESSING -> "Fusion • super-resolution • Pixel Creator"
                     MultiFrameCaptureEngine.State.CLOSED -> "Camera engine closed"
                     else -> mode
                 }, Modifier.align(Alignment.CenterHorizontally), color = Color.Gray, fontSize = 11.sp)
