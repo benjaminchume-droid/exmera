@@ -26,12 +26,17 @@
 - [x] Timestamp/orientation preservation
 - [x] Deterministic frame selection primitive
 - [ ] Camera2 RAW ImageReader capture
-- [ ] motion alignment
-- [ ] multi-frame fusion
-- [ ] HDR/exposure fusion
-- [ ] denoise
-- [ ] super-resolution
-- [ ] result comparison UI
+- [x] motion alignment
+- [x] multi-frame fusion
+- [x] exposure normalization / robust fusion
+- [x] temporal denoise / outlier suppression
+- [x] first reconstructed output
+- [x] result comparison/result UI
+- [ ] dense optical-flow alignment
+- [ ] HDR exposure bracketing
+- [ ] full-resolution tiled fusion
+- [ ] GPU/NPU accelerated kernels
+- [ ] learned super-resolution
 
 ## Milestone 3 — Vision
 - [ ] face detection/tracking
