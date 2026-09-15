@@ -26,6 +26,7 @@ class CpuSaliencyBackend(private val threshold:Float=.16f):VisionBackend{
  private fun gradient(l:FloatArray,w:Int,h:Int,x:Int,y:Int):Float{val gx=l[y*w+min(w-1,x+1)]-l[y*w+max(0,x-1)];val gy=l[min(h-1,y+1)*w+x]-l[max(0,y-1)*w+x];return sqrt(gx*gx+gy*gy)}
 }
 
+/** Legacy lightweight tracker retained for compatibility; new integrations should use TrackingEngine. */
 class VisionTracker(private val maxMissingFrames:Int=8,private val iouThreshold:Float=.12f){private data class Track(var d:VisionDetection,var missing:Int=0);private val tracks=ArrayList<Track>();private var nextId=1L
  @Synchronized fun update(detections:List<VisionDetection>):List<VisionDetection>{val used=BooleanArray(detections.size);for(t in tracks){var best=-1;var score=iouThreshold;for(i in detections.indices)if(!used[i]){val s=iou(t.d.bounds,detections[i].bounds);if(s>score){score=s;best=i}};if(best>=0){t.d=detections[best].copy(id=t.d.id);t.missing=0;used[best]=true}else t.missing++};tracks.removeAll{it.missing>maxMissingFrames};for(i in detections.indices)if(!used[i])tracks+=Track(detections[i].copy(id=nextId++));return tracks.map{it.d}}
  private fun iou(a:VisionRect,b:VisionRect):Float{val l=max(a.left,b.left);val t=max(a.top,b.top);val r=min(a.right,b.right);val d=min(a.bottom,b.bottom);if(r<=l||d<=t)return 0f;val x=(r-l)*(d-t);return x/(a.area+b.area-x)}}
@@ -39,4 +40,11 @@ object RelativeDepthEstimator{fun estimate(image:RgbImage):DepthMap{val w=image.
 
 object SaliencySegmenter{fun segment(image:RgbImage):SegmentationMask{val w=image.width;val h=image.height;val a=FloatArray(w*h);for(y in 0 until h)for(x in 0 until w){val i=(y*w+x)*3;val r=image.pixels[i];val g=image.pixels[i+1];val b=image.pixels[i+2];val sat=max(r,max(g,b))-min(r,min(g,b));val dx=x/w.toFloat()-.5f;val dy=y/h.toFloat()-.5f;val center=(1f-sqrt(dx*dx+dy*dy)*1.4f).coerceIn(0f,1f);a[y*w+x]=(center*.65f+sat*.35f).coerceIn(0f,1f)};return SegmentationMask(w,h,a)}}
 
-class VisionEngine(private val backends:List<VisionBackend> = listOf(CpuSaliencyBackend())){private val tracker=VisionTracker();fun detect(frame:VisionFrame)=backends.firstOrNull()?.detect(frame)?.let(tracker::update)?:emptyList();fun quality(image:RgbImage)=VisionQualityAnalyzer.analyze(image);fun depth(image:RgbImage)=RelativeDepthEstimator.estimate(image);fun segmentation(image:RgbImage)=SaliencySegmenter.segment(image)}
+class VisionEngine(private val backends:List<VisionBackend> = listOf(CpuSaliencyBackend()), private val tracking:TrackingEngine = TrackingEngine()){
+ fun detect(frame:VisionFrame):List<VisionDetection> = backends.firstOrNull()?.detect(frame).orEmpty()
+ fun track(frame:VisionFrame, deltaTimeSeconds:Float = 1f/30f):List<TrackSnapshot> = tracking.update(detect(frame), deltaTimeSeconds)
+ fun resetTracking() = tracking.reset()
+ fun quality(image:RgbImage)=VisionQualityAnalyzer.analyze(image)
+ fun depth(image:RgbImage)=RelativeDepthEstimator.estimate(image)
+ fun segmentation(image:RgbImage)=SaliencySegmenter.segment(image)
+}
