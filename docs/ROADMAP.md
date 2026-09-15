@@ -61,6 +61,12 @@
 - [x] class-aware association
 - [x] recent-track re-identification window
 - [x] normalized coordinate transforms
+- [x] Phase 14 portrait/depth engine
+- [x] depth calibration and confidence primitives
+- [x] depth-aware portrait mask generation
+- [x] depth-aware CPU bokeh/blur
+- [x] foreground/face protection controls
+- [x] aperture-to-bokeh controls
 - [ ] learned face detection/tracking model
 - [ ] learned person/object detection model
 - [ ] learned semantic segmentation/matting model
