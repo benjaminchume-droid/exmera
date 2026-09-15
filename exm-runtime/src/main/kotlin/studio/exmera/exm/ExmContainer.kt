@@ -1,32 +1,35 @@
 package studio.exmera.exm
 
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.InputStream
 import java.io.OutputStream
+import java.util.zip.DeflaterOutputStream
+import java.util.zip.InflaterInputStream
 
-/** Deterministic EXM v1 container. Manifest is small; payload is opaque model data. */
 object ExmContainer {
-    private const val FORMAT_VERSION = 1
+    private const val FORMAT_VERSION = ExmFormat.VERSION
 
     fun write(output: OutputStream, manifest: ExmFormat.Manifest, payload: ByteArray) {
         require(manifest.id.isNotBlank())
-        require(manifest.sha256 == ExmReader.sha256(payload)) { "Manifest SHA-256 does not match payload" }
+        require(payload.size.toLong() <= ExmFormat.MAX_PAYLOAD_BYTES)
+        val stored = if (manifest.compression == ExmFormat.Compression.DEFLATE) compress(payload) else payload
+        require(stored.size.toLong() == manifest.sizeBytes)
+        require(manifest.sha256 == ExmReader.sha256(stored)) { "EXM payload SHA-256 mismatch" }
         DataOutputStream(output).use { out ->
             out.writeBytes(ExmFormat.MAGIC)
             out.writeInt(FORMAT_VERSION)
-            writeString(out, manifest.id)
-            writeString(out, manifest.version)
-            writeString(out, manifest.name)
+            writeString(out, manifest.id); writeString(out, manifest.version); writeString(out, manifest.name)
             out.writeInt(manifest.quantization.ordinal)
-            out.writeInt(manifest.backends.fold(0) { acc, b -> acc or (1 shl b.ordinal) })
+            out.writeInt(manifest.backends.fold(0) { a, b -> a or (1 shl b.ordinal) })
+            out.writeInt(manifest.compression.ordinal)
             writeString(out, manifest.sha256)
+            out.writeLong(stored.size.toLong())
             out.writeLong(payload.size.toLong())
-            out.writeInt(manifest.minRamMb)
-            out.writeInt(manifest.minAndroid)
-            writeString(out, manifest.license)
-            out.writeLong(payload.size.toLong())
-            out.write(payload)
+            out.writeInt(manifest.minRamMb); out.writeInt(manifest.minAndroid); writeString(out, manifest.license)
+            out.writeLong(stored.size.toLong()); out.write(stored)
         }
     }
 
@@ -39,23 +42,33 @@ object ExmContainer {
             val q = ExmFormat.Quantization.entries.getOrNull(inputStream.readInt()) ?: error("Invalid quantization")
             val mask = inputStream.readInt()
             val backends = ExmFormat.Backend.entries.filter { mask and (1 shl it.ordinal) != 0 }.toSet()
-            val sha = readString(inputStream)
-            val declaredSize = inputStream.readLong()
+            val compression = ExmFormat.Compression.entries.getOrNull(inputStream.readInt()) ?: error("Invalid compression")
+            val sha = readString(inputStream); val storedSize = inputStream.readLong(); val originalSize = inputStream.readLong()
             val minRam = inputStream.readInt(); val minAndroid = inputStream.readInt(); val license = readString(inputStream)
             val payloadSize = inputStream.readLong()
-            require(payloadSize == declaredSize && payloadSize >= 0 && payloadSize <= Int.MAX_VALUE) { "Invalid EXM payload size" }
-            val payload = ByteArray(payloadSize.toInt()); inputStream.readFully(payload)
-            require(ExmReader.sha256(payload) == sha) { "EXM payload integrity check failed" }
-            return ExmFormat.Manifest(id, version, name, q, backends, sha, payload.size.toLong(), minRam, minAndroid, license) to payload
+            require(payloadSize == storedSize && payloadSize in 0..ExmFormat.MAX_PAYLOAD_BYTES) { "Invalid EXM payload size" }
+            val stored = ByteArray(payloadSize.toInt()); inputStream.readFully(stored)
+            require(ExmReader.sha256(stored) == sha) { "EXM payload integrity check failed" }
+            val payload = if (compression == ExmFormat.Compression.DEFLATE) decompress(stored, originalSize) else stored
+            require(payload.size.toLong() == originalSize) { "EXM original size mismatch" }
+            return ExmFormat.Manifest(id, version, name, q, backends, sha, stored.size.toLong(), minRam, minAndroid, license, compression, originalSize) to payload
         }
     }
 
-    private fun writeString(out: DataOutputStream, value: String) {
-        val bytes = value.toByteArray(Charsets.UTF_8); require(bytes.size <= 1_048_576)
-        out.writeInt(bytes.size); out.write(bytes)
+    private fun compress(payload: ByteArray): ByteArray = ByteArrayOutputStream().use { b ->
+        DeflaterOutputStream(b).use { it.write(payload) }; b.toByteArray()
     }
-    private fun readString(input: DataInputStream): String {
-        val size = input.readInt(); require(size in 0..1_048_576) { "Invalid EXM string length" }
-        val bytes = ByteArray(size); input.readFully(bytes); return String(bytes, Charsets.UTF_8)
+
+    private fun decompress(payload: ByteArray, expected: Long): ByteArray {
+        require(expected in 0..ExmFormat.MAX_PAYLOAD_BYTES)
+        return InflaterInputStream(ByteArrayInputStream(payload)).use { input ->
+            val out = ByteArrayOutputStream(expected.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE); var total = 0L
+            while (true) { val n = input.read(buffer); if (n < 0) break; total += n; require(total <= ExmFormat.MAX_PAYLOAD_BYTES); out.write(buffer, 0, n) }
+            out.toByteArray()
+        }
     }
+
+    private fun writeString(out: DataOutputStream, value: String) { val bytes = value.toByteArray(Charsets.UTF_8); require(bytes.size <= ExmFormat.MAX_STRING_BYTES); out.writeInt(bytes.size); out.write(bytes) }
+    private fun readString(input: DataInputStream): String { val size = input.readInt(); require(size in 0..ExmFormat.MAX_STRING_BYTES); val bytes = ByteArray(size); input.readFully(bytes); return String(bytes, Charsets.UTF_8) }
 }
