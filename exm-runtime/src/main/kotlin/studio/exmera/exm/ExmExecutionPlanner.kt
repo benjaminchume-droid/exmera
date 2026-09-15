@@ -29,10 +29,8 @@ object ExmExecutionPlanner {
         }
         val selected = candidates.firstOrNull { backendAvailable(it, manifest, device) }
             ?: return denied("No compatible execution backend", manifest)
-        val quantization = if (device.thermalThrottled && manifest.quantization == ExmFormat.Quantization.FP32) {
-            ExmFormat.Quantization.FP16
-        } else manifest.quantization
-        return ExmExecutionPlan(selected, quantization, true, "Selected ${selected.name} for current device state")
+        val thermalNote = if (device.thermalThrottled) "; thermal state is throttled" else ""
+        return ExmExecutionPlan(selected, manifest.quantization, true, "Selected precompiled ${manifest.quantization} variant on ${selected.name}$thermalNote")
     }
 
     private fun backendAvailable(backend: ExmFormat.Backend, manifest: ExmFormat.Manifest, device: ExmDeviceProfile): Boolean =
