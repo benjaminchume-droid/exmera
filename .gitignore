@@ -1,0 +1,16 @@
+.gradle/
+.idea/
+/build/
+*/build/
+local.properties
+*.iml
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+models/*.onnx
+models/*.tflite
+models/*.pt
+models/*.bin
+models/*.safetensors
+*.exm
