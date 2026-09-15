@@ -9,10 +9,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.LifecycleOwner
 import studio.exmera.app.camera.ExmeraCameraController
+import studio.exmera.app.camera.MultiFrameCaptureEngine
 
 @Composable
 fun CameraPreview(
     modifier: Modifier = Modifier,
+    captureEngine: MultiFrameCaptureEngine? = null,
     onController: (ExmeraCameraController) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -25,7 +27,10 @@ fun CameraPreview(
         modifier = modifier,
         factory = { ctx ->
             PreviewView(ctx).also { view ->
-                controller.bind(view)
+                controller.bind(view) { frame ->
+                    if (captureEngine == null) frame.image.close()
+                    else captureEngine.accept(frame.image)
+                }
                 onController(controller)
             }
         }
