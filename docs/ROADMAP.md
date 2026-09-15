@@ -55,9 +55,12 @@
 - [x] detection backend contract
 - [x] deterministic CPU saliency fallback
 - [x] stable IoU-based tracking
-- [x] image quality analysis
-- [x] relative depth fallback
-- [x] soft segmentation fallback
+- [x] Phase 13 persistent tracking engine
+- [x] motion prediction with velocity/acceleration
+- [x] confidence decay and occlusion/lost lifecycle
+- [x] class-aware association
+- [x] recent-track re-identification window
+- [x] normalized coordinate transforms
 - [ ] learned face detection/tracking model
 - [ ] learned person/object detection model
 - [ ] learned semantic segmentation/matting model
