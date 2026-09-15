@@ -7,12 +7,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import studio.exmera.engine.core.MultiFrameBuffer
 import studio.exmera.engine.imaging.ComputationalImagingCore
+import studio.exmera.engine.imaging.PixelCreatorConfig
+import studio.exmera.engine.imaging.PixelCreatorEngine
 import studio.exmera.engine.imaging.SuperResolutionConfig
 import studio.exmera.engine.imaging.SuperResolutionEngine
 import studio.exmera.engine.imaging.SuperResolutionScale
 import java.util.concurrent.atomic.AtomicLong
 
-/** Phase 8-10 capture coordinator: capture -> align/fuse -> super-resolve. */
+/** Phase 8-11 capture coordinator: capture -> align/fuse -> super-resolve -> Pixel Creator. */
 class MultiFrameCaptureEngine(
     capacity: Int = 8,
     private val maxWorkingDimension: Int = 1920
@@ -37,6 +39,7 @@ class MultiFrameCaptureEngine(
     val state: StateFlow<State> = _state.asStateFlow()
     private val imagingCore = ComputationalImagingCore()
     private val superResolution = SuperResolutionEngine()
+    private val pixelCreator = PixelCreatorEngine()
     private var targetCount = 0
     private var startedAtNs = 0L
 
@@ -63,8 +66,11 @@ class MultiFrameCaptureEngine(
         return CaptureResult(buffer.snapshot(), startedAtNs, System.nanoTime())
     }
 
-    /** Reconstructs and optionally super-resolves the captured frames on a worker thread. */
-    @Synchronized fun processToBitmap(scale: SuperResolutionScale = SuperResolutionScale.X2): Bitmap? {
+    /** Reconstructs the capture through fusion, super-resolution, and Pixel Creator. */
+    @Synchronized fun processToBitmap(
+        scale: SuperResolutionScale = SuperResolutionScale.X2,
+        pixelConfig: PixelCreatorConfig = PixelCreatorConfig()
+    ): Bitmap? {
         if (_state.value != State.COMPLETE) return null
         _state.value = State.PROCESSING
         val captured = buffer.drain()
@@ -75,7 +81,8 @@ class MultiFrameCaptureEngine(
                 fused.image,
                 SuperResolutionConfig(scale = scale, tileSize = 256, overlap = 16, sharpen = 0.22f)
             )
-            ImageProxyImagingAdapter.toBitmap(resolved.image)
+            val created = pixelCreator.process(resolved.image, pixelConfig)
+            ImageProxyImagingAdapter.toBitmap(created.image)
         } finally {
             captured.forEach(CapturedFrame::close)
             _state.value = State.IDLE
