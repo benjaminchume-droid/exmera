@@ -19,8 +19,13 @@
 - [ ] Real-ESRGAN-General-x4v3 benchmark
 
 ## Milestone 2 — Camera engine
-- [ ] ImageCapture pipeline
-- [ ] original-frame burst retention
+- [x] Camera foundation and capability discovery
+- [x] ImageAnalysis pipeline
+- [x] Original-frame multi-frame retention
+- [x] Bounded frame ownership and lifecycle
+- [x] Timestamp/orientation preservation
+- [x] Deterministic frame selection primitive
+- [ ] Camera2 RAW ImageReader capture
 - [ ] motion alignment
 - [ ] multi-frame fusion
 - [ ] HDR/exposure fusion
