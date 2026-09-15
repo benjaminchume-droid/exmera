@@ -1,14 +1,25 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
+  "policy": "Only models marked APPROVED_FOR_BUNDLING may be redistributed after exact checkpoint and asset license verification.",
   "packs": [
-    {"id":"core","name":"Exmera Core","target":"8-22MB","required":true},
-    {"id":"smart","name":"Exmera Smart","target":"28-60MB","required":false},
-    {"id":"creator","name":"Exmera Creator","target":"45-105MB","required":false},
-    {"id":"cinema","name":"Exmera Cinema","target":"80-220MB+","required":false}
+    {"id":"core","name":"Exmera Core","target":"8-40MB","required":true},
+    {"id":"smart","name":"Exmera Smart","target":"28-100MB","required":false},
+    {"id":"creator","name":"Exmera Creator","target":"45-250MB","required":false},
+    {"id":"video","name":"Exmera Video","target":"40-300MB","required":false},
+    {"id":"cinema","name":"Exmera Cinema","target":"80-500MB+","required":false}
   ],
   "models": [
-    {"id":"realesrgan-general-x4v3","pack":"core","sourceFormat":"onnx","status":"benchmark-first","license":"VERIFY_BEFORE_REDISTRIBUTION"},
-    {"id":"face-detection-lite","pack":"core","sourceFormat":"tflite","status":"planned","license":"VERIFY_BEFORE_REDISTRIBUTION"},
-    {"id":"object-detection-lite","pack":"core","sourceFormat":"onnx","status":"planned","license":"VERIFY_BEFORE_REDISTRIBUTION"}
+    {"id":"real-esrgan","name":"Real-ESRGAN","pack":"core","task":"super_resolution/restoration","source":"https://github.com/xinntao/Real-ESRGAN","license":"BSD-3-Clause","status":"APPROVED_FOR_BUNDLING","sourceFormat":"onnx"},
+    {"id":"sam2","name":"Segment Anything 2","pack":"creator","task":"image_video_segmentation_tracking","source":"https://github.com/facebookresearch/sam2","license":"Apache-2.0","status":"APPROVED_FOR_BUNDLING","sourceFormat":"pytorch"},
+    {"id":"mmpose","name":"MMPose","pack":"smart","task":"pose_landmarks","source":"https://github.com/open-mmlab/mmpose","license":"Apache-2.0","status":"APPROVED_FOR_BUNDLING","sourceFormat":"pytorch"},
+    {"id":"mmsegmentation","name":"MMSegmentation","pack":"smart","task":"semantic_segmentation","source":"https://github.com/open-mmlab/mmsegmentation","license":"Apache-2.0","status":"APPROVED_FOR_BUNDLING","sourceFormat":"pytorch"},
+    {"id":"opencv","name":"OpenCV","pack":"core","task":"classical_vision","source":"https://opencv.org/","license":"Apache-2.0","status":"APPROVED_FOR_BUNDLING","sourceFormat":"native"},
+    {"id":"paddleocr","name":"PaddleOCR","pack":"smart","task":"ocr","source":"https://github.com/PaddlePaddle/PaddleOCR","license":"Apache-2.0","status":"REVIEW_REQUIRED","sourceFormat":"pytorch"},
+    {"id":"raft","name":"RAFT","pack":"video","task":"optical_flow","source":"https://github.com/princeton-vl/RAFT","license":"REVIEW_REQUIRED","status":"REVIEW_REQUIRED","sourceFormat":"pytorch"},
+    {"id":"rife","name":"RIFE","pack":"video","task":"frame_interpolation","source":"https://github.com/hzwer/ECCV2022-RIFE","license":"REVIEW_REQUIRED","status":"REVIEW_REQUIRED","sourceFormat":"pytorch"},
+    {"id":"depth-anything","name":"Depth Anything","pack":"smart","task":"monocular_depth","source":"https://github.com/LiheYoung/Depth-Anything","license":"REVIEW_REQUIRED","status":"REVIEW_REQUIRED","sourceFormat":"pytorch"},
+    {"id":"dinov2","name":"DINOv2","pack":"smart","task":"visual_embedding","source":"https://github.com/facebookresearch/dinov2","license":"REVIEW_REQUIRED","status":"REVIEW_REQUIRED","sourceFormat":"pytorch"},
+    {"id":"insightface-weights","name":"InsightFace pretrained weights","pack":"smart","task":"face_recognition","source":"https://github.com/deepinsight/insightface","license":"COMMERCIAL_LICENSE_REQUIRED","status":"BLOCKED","sourceFormat":"onnx"},
+    {"id":"ultralytics-yolo","name":"Ultralytics YOLO","pack":"core","task":"object_detection","source":"https://github.com/ultralytics/ultralytics","license":"AGPL-3.0/Enterprise","status":"BLOCKED","sourceFormat":"pytorch"}
   ]
 }
