@@ -51,11 +51,17 @@
 - [ ] trained learned Pixel Creator model
 
 ## Milestone 3 — Vision
-- [ ] face detection/tracking
-- [ ] person/object tracking
-- [ ] segmentation
-- [ ] depth
-- [ ] quality analysis
+- [x] shared VisionEngine facade
+- [x] detection backend contract
+- [x] deterministic CPU saliency fallback
+- [x] stable IoU-based tracking
+- [x] image quality analysis
+- [x] relative depth fallback
+- [x] soft segmentation fallback
+- [ ] learned face detection/tracking model
+- [ ] learned person/object detection model
+- [ ] learned semantic segmentation/matting model
+- [ ] trained metric/monocular depth model
 
 ## Milestone 4 — Video
 - [ ] temporal denoise
