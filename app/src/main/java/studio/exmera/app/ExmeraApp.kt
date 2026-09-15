@@ -19,25 +19,18 @@ fun ExmeraApp(profile: String) {
         Surface(Modifier.fillMaxSize(), color = Color.Black) {
             Column(Modifier.fillMaxSize().padding(20.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Column {
-                        Text("EXMERA", fontSize = 25.sp, fontWeight = FontWeight.Bold)
-                        Text("Professional power. Simple controls.", color = Color.LightGray, fontSize = 12.sp)
-                    }
+                    Column { Text("EXMERA", fontSize = 25.sp, fontWeight = FontWeight.Bold); Text("Professional power. Simple controls.", color = Color.LightGray, fontSize = 12.sp) }
                     AssistChip(onClick = {}, label = { Text(profile) })
                 }
                 Spacer(Modifier.height(18.dp))
-                Box(Modifier.fillMaxWidth().weight(1f).background(Color(0xFF151515), RoundedCornerShape(28.dp)), contentAlignment = Alignment.Center) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("CAMERA", fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.height(8.dp))
-                        Text("Your camera preview will live here", color = Color.Gray)
-                    }
+                Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                    CameraPreview(Modifier.fillMaxSize().background(Color(0xFF151515), RoundedCornerShape(28.dp)))
                 }
-                Spacer(Modifier.height(18.dp))
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
                     TextButton(onClick = { mode = "Enhance" }) { Text("✨ Enhance") }
                     Button(onClick = { mode = "Camera" }, shape = RoundedCornerShape(24.dp), modifier = Modifier.size(72.dp)) { Text("●") }
-                    TextButton(onClick = { mode = "Gallery" }) { Text("Exllery") }
+                    TextButton(onClick = { mode = "Exllery" }) { Text("Exllery") }
                 }
                 Text(mode, Modifier.align(Alignment.CenterHorizontally), color = Color.Gray, fontSize = 11.sp)
             }
