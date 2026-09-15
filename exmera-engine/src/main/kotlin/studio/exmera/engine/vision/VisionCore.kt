@@ -40,11 +40,13 @@ object RelativeDepthEstimator{fun estimate(image:RgbImage):DepthMap{val w=image.
 
 object SaliencySegmenter{fun segment(image:RgbImage):SegmentationMask{val w=image.width;val h=image.height;val a=FloatArray(w*h);for(y in 0 until h)for(x in 0 until w){val i=(y*w+x)*3;val r=image.pixels[i];val g=image.pixels[i+1];val b=image.pixels[i+2];val sat=max(r,max(g,b))-min(r,min(g,b));val dx=x/w.toFloat()-.5f;val dy=y/h.toFloat()-.5f;val center=(1f-sqrt(dx*dx+dy*dy)*1.4f).coerceIn(0f,1f);a[y*w+x]=(center*.65f+sat*.35f).coerceIn(0f,1f)};return SegmentationMask(w,h,a)}}
 
-class VisionEngine(private val backends:List<VisionBackend> = listOf(CpuSaliencyBackend()), private val tracking:TrackingEngine = TrackingEngine()){
+class VisionEngine(private val backends:List<VisionBackend> = listOf(CpuSaliencyBackend()), private val tracking:TrackingEngine = TrackingEngine(), private val portrait:PortraitDepthEngine = PortraitDepthEngine()){
  fun detect(frame:VisionFrame):List<VisionDetection> = backends.firstOrNull()?.detect(frame).orEmpty()
  fun track(frame:VisionFrame, deltaTimeSeconds:Float = 1f/30f):List<TrackSnapshot> = tracking.update(detect(frame), deltaTimeSeconds)
  fun resetTracking() = tracking.reset()
  fun quality(image:RgbImage)=VisionQualityAnalyzer.analyze(image)
  fun depth(image:RgbImage)=RelativeDepthEstimator.estimate(image)
  fun segmentation(image:RgbImage)=SaliencySegmenter.segment(image)
+ fun portrait(image:RgbImage):DepthAwareImage { val d=depth(image); return portrait.process(image,d,PortraitMaskEstimator.estimate(image,d,detect(VisionFrame(image,0L)))) }
+ fun portrait(image:RgbImage, depth:DepthMap):DepthAwareImage = portrait.process(image,depth)
 }
