@@ -11,7 +11,7 @@
 ## Milestone 1 — EXM laboratory
 - [ ] Canonical binary EXM encoder
 - [ ] EXM decoder and chunk index
-- [ ] SHA-256 verification
+- [x] SHA-256 verification
 - [ ] ONNX ingestion
 - [ ] FP16/INT8 conversion adapters
 - [ ] Compression benchmark harness
@@ -36,6 +36,11 @@
 - [x] 2× and 4× output pipeline
 - [x] EXM-ready super-resolution backend interface
 - [x] objective image-quality metric primitives
+- [x] Phase 11 Pixel Creator reconstruction engine
+- [x] structure / texture / detail analysis maps
+- [x] Pixel Creator backend abstraction
+- [x] CPU reconstruction fallback
+- [x] camera pipeline integration
 - [ ] Camera2 RAW ImageReader integration
 - [ ] dense optical-flow alignment
 - [ ] gyro-assisted registration
@@ -43,6 +48,7 @@
 - [ ] full-resolution tiled learned fusion
 - [ ] GPU/NPU accelerated kernels
 - [ ] trained learned super-resolution model
+- [ ] trained learned Pixel Creator model
 
 ## Milestone 3 — Vision
 - [ ] face detection/tracking
